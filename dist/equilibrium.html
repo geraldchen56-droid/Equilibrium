@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en" data-depth="intuition">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Equilibrium: game theory, solved live</title>
+<meta name="description" content="An interactive game theory course where every game is solved live by a real engine.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400..700;1,8..60,400..700&display=swap" rel="stylesheet">
+<style>:root {
+  --paper: #f2f4f6;
+  --panel: #ffffff;
+  --ink: #18202b;
+  --muted: #5b6573;
+  --rule: #c9d1db;
+  --grid: #e1e6ec;
+  --row: #2a4fd6;         /* Row player: cobalt */
+  --row-soft: #2a4fd61a;
+  --col: #c98a00;         /* Column player: marigold (fills) */
+  --col-ink: #845a00;     /* Column player: marigold (text) */
+  --col-soft: #c98a001f;
+  --eq: #0e7f57;          /* Equilibrium */
+  --eq-soft: #0e7f5714;
+  --bad: #b3261e;
+  --ui: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --read: "Source Serif 4", Georgia, "Times New Roman", serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0f141b; --panel: #161d27; --ink: #e6eaf0; --muted: #9aa4b2; --rule: #334050; --grid: #1b2430;
+    --row: #7d9bff; --row-soft: #7d9bff22; --col: #f0b429; --col-ink: #f0b429; --col-soft: #f0b42922;
+    --eq: #3cc08a; --eq-soft: #3cc08a1c; --bad: #ff8a80; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0f141b; --panel: #161d27; --ink: #e6eaf0; --muted: #9aa4b2; --rule: #334050; --grid: #1b2430;
+  --row: #7d9bff; --row-soft: #7d9bff22; --col: #f0b429; --col-ink: #f0b429; --col-soft: #f0b42922;
+  --eq: #3cc08a; --eq-soft: #3cc08a1c; --bad: #ff8a80; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 18px/1.65 var(--read); }
+a { color: var(--row); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--row); outline-offset: 2px; border-radius: 3px; }
+.skip { position: absolute; left: -999px; }
+.skip:focus { left: 16px; top: 8px; z-index: 10; background: var(--panel); padding: 6px 10px; }
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px;
+  height: 56px; padding: 0 20px; background: var(--paper); border-bottom: 1px solid var(--rule); font-family: var(--ui);
+}
+.brand { font-weight: 800; font-stretch: 80%; font-size: 21px; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
+.toc-toggle { display: none; }
+.depth-switch { margin-left: auto; display: flex; align-items: center; gap: 2px; font-size: 14px; }
+.depth-label { color: var(--muted); margin-right: 8px; }
+.depth-switch button {
+  font: inherit; font-weight: 600; padding: 6px 12px; border: 1px solid var(--rule); background: transparent; color: var(--muted); cursor: pointer;
+}
+.depth-switch button:first-of-type { border-radius: 6px 0 0 6px; }
+.depth-switch button:last-of-type { border-radius: 0 6px 6px 0; }
+.depth-switch button + button { border-left: 0; }
+.depth-switch button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* ---------- Layout ---------- */
+.layout { display: grid; grid-template-columns: 272px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+.toc { position: sticky; top: 56px; align-self: start; max-height: calc(100vh - 56px); overflow: auto; padding: 28px 20px 40px; font: 15px/1.45 var(--ui); }
+.toc a, .toc .soon { display: block; padding: 4px 0; color: var(--ink); text-decoration: none; }
+.toc a:hover { color: var(--row); }
+.toc a.active { color: var(--row); font-weight: 650; }
+.toc .soon { color: var(--muted); opacity: .7; }
+.toc-home { font-weight: 600; }
+.toc-part { margin: 22px 0 4px; font-weight: 700; font-stretch: 85%; color: var(--muted); font-size: 13.5px; }
+.toc-list { margin: 0; padding-left: 22px; }
+.toc-list li::marker { color: var(--muted); font-size: 13px; }
+main { padding: 40px 32px 96px; min-width: 0; }
+main:focus { outline: none; }
+.chapter, .intro, .chapter-list, .hero { max-width: 700px; }
+
+/* ---------- Type ---------- */
+h1, h2, h3 { font-family: var(--ui); line-height: 1.1; letter-spacing: -0.015em; }
+h1 { font-size: 46px; font-weight: 800; font-stretch: 78%; margin: 0 0 24px; }
+h2 { font-size: 27px; font-weight: 750; font-stretch: 85%; margin: 56px 0 12px; }
+p { margin: 0 0 16px; }
+.lede { font-size: 21px; line-height: 1.55; }
+.chapter-num { font: 600 15px var(--ui); color: var(--muted); margin: 0 0 6px; }
+.math { font-style: italic; white-space: nowrap; }
+sub { font-size: .72em; }
+
+/* ---------- Hero ---------- */
+.hero { padding: 8px 0 8px; }
+.hero h1 { font-size: clamp(56px, 11vw, 112px); font-stretch: 62%; font-weight: 800; line-height: .92; letter-spacing: -0.03em; margin: 0 0 16px; }
+.hero-sub { font-size: 21px; max-width: 34ch; margin-bottom: 28px; }
+.hero-game {
+  padding: 24px; border: 1px solid var(--rule); border-radius: 10px;
+  background-color: var(--panel);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.hero-game .matrix-wrap { margin: 8px 0 12px; }
+.hero-status { font: 500 16px/1.5 var(--ui); margin: 0; min-height: 3em; background: var(--panel); padding: 8px 10px; border-radius: 6px; }
+.intro { margin-top: 40px; }
+.start { margin-top: 8px; }
+.chapter-list ol { padding-left: 28px; }
+.chapter-list li { margin-bottom: 12px; }
+.chapter-list li::marker { font: 600 15px var(--ui); color: var(--muted); }
+.chapter-list a, .chapter-list li > span:first-child { font: 650 18px var(--ui); display: block; }
+.chapter-list .blurb { font-size: 16px; color: var(--muted); }
+.chapter-list .is-soon > span:first-child { color: var(--muted); }
+
+/* ---------- Payoff matrix (Schelling notation) ---------- */
+.matrix-wrap { margin: 24px 0; overflow-x: auto; }
+.matrix { border-collapse: collapse; font-family: var(--ui); }
+.matrix th { font-weight: 600; font-size: 15px; padding: 6px 10px; }
+.matrix thead th { text-align: center; vertical-align: bottom; }
+.matrix tbody th { text-align: right; }
+.matrix .corner { position: relative; width: 112px; height: 52px; padding: 0;
+  background: linear-gradient(to top right, transparent calc(50% - .5px), var(--rule) 50%, transparent calc(50% + .5px)); }
+.who { position: absolute; font-size: 13px; font-weight: 700; }
+.who-p1 { top: 4px; right: 8px; color: var(--col-ink); }
+.who-p0 { bottom: 4px; left: 8px; color: var(--row); }
+.cell {
+  width: 104px; height: 76px; padding: 0; border: 1px solid var(--rule); background: var(--panel); position: relative;
+  transition: background-color .15s, opacity .2s;
+}
+.cell .split {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top right, transparent calc(50% - .5px), var(--rule) 50%, transparent calc(50% + .5px));
+}
+.pay { position: absolute; font-size: 21px; font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1; padding: 2px 3px; }
+.pay-p0 { left: 10px; bottom: 10px; color: var(--row); }
+.pay-p1 { right: 10px; top: 10px; color: var(--col-ink); }
+.pay.best { text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 4px; }
+input.pay { width: auto; min-width: 2.2ch; border: 1px dashed var(--rule); border-radius: 4px; background: transparent; font-family: var(--ui); text-align: center; }
+input.pay:hover { border-color: var(--muted); }
+.cell.clickable { cursor: pointer; }
+.cell.clickable:hover { background: var(--row-soft); }
+.cell.hi { background: var(--row-soft); }
+.cell.nash { box-shadow: inset 0 0 0 3px var(--eq); background: var(--eq-soft); }
+.cell.dead { opacity: .22; }
+.strat { font: inherit; color: inherit; }
+.strat-p0 { color: var(--row); }
+.strat-p1 { color: var(--col-ink); }
+button.strat { background: none; border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+button.strat:hover { border-color: currentColor; }
+.strat.dead { text-decoration: line-through; opacity: .45; }
+.matrix-wrap figcaption { font: 14px/1.45 var(--ui); color: var(--muted); margin-top: 10px; max-width: 60ch; }
+.key { font: 14px var(--ui); color: var(--muted); margin: 0; }
+.chip { font-weight: 700; }
+.chip-p0 { color: var(--row); }
+.chip-p1 { color: var(--col-ink); }
+
+/* ---------- Interactives ---------- */
+.interactive { margin: 24px 0 32px; padding: 20px 22px; background: var(--panel); border: 1px solid var(--rule); border-left: 4px solid var(--row); border-radius: 4px 10px 10px 4px; }
+.interactive .matrix-wrap { margin: 12px 0; }
+.prompt { font: 600 17px var(--ui); }
+.result { font-size: 19px; font-weight: 600; }
+.choices, .controls { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
+.btn { font: 600 15px var(--ui); padding: 10px 16px; border-radius: 8px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; text-decoration: none; display: inline-block; }
+.btn-p0 { background: var(--row); border-color: var(--row); color: #fff; }
+.btn-p0:hover { filter: brightness(1.1); }
+.btn-quiet { border-color: var(--rule); }
+.btn-quiet:hover { border-color: var(--ink); }
+.compare { font-size: 16px; padding-left: 20px; }
+.feedback { font: 500 16px/1.5 var(--ui); padding-left: 12px; border-left: 3px solid var(--rule); }
+.feedback.good, .feedback.done { border-color: var(--eq); }
+.feedback.bad { border-color: var(--bad); }
+
+/* ---------- Depth layers ---------- */
+.depth { margin: 24px 0; padding: 16px 20px; border: 1px dashed var(--rule); border-radius: 10px; font-size: 17px; }
+.depth-tag { display: inline-block; font: 700 13px var(--ui); color: var(--muted); margin-bottom: 6px; }
+.depth-formal { border-color: var(--row); }
+.depth-quant { border-color: var(--col); }
+[data-depth="intuition"] .depth-formal, [data-depth="intuition"] .depth-quant, [data-depth="formal"] .depth-quant { display: none; }
+.drill .matrix-wrap { margin: 8px 0; }
+
+.tip { margin: 40px 0 0; padding: 14px 18px; border-radius: 8px; background: var(--col-soft); font: 16px/1.5 var(--ui); }
+.pager { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--rule); }
+.soon-note { font: 15px var(--ui); color: var(--muted); }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc { position: fixed; top: 56px; left: 0; bottom: 0; width: 290px; max-height: none; background: var(--paper); border-right: 1px solid var(--rule); transform: translateX(-100%); transition: transform .2s; z-index: 4; }
+  body.toc-open .toc { transform: none; }
+  .toc-toggle { display: inline-block; font: 600 14px var(--ui); padding: 6px 10px; border: 1px solid var(--rule); border-radius: 6px; background: transparent; color: var(--ink); }
+  main { padding: 28px 16px 80px; }
+  .depth-label { display: none; }
+  .depth-switch button { padding: 6px 8px; font-size: 13px; }
+  .topbar { gap: 10px; padding: 0 12px; }
+  .brand { font-size: 18px; }
+  h1 { font-size: 36px; }
+  .cell { width: 84px; height: 66px; }
+  .pay { font-size: 18px; }
+  .matrix .corner { width: 90px; }
+  .interactive { padding: 16px 14px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<div class="topbar">
+  <button id="toc-toggle" class="toc-toggle" type="button" aria-label="Show chapters">Chapters</button>
+  <a class="brand" href="#/">Equilibrium</a>
+  <div id="depth" class="depth-switch" role="group" aria-labelledby="depth-label"></div>
+</div>
+<div class="layout">
+  <nav id="toc" class="toc" aria-label="Chapters"></nav>
+  <main id="main" tabindex="-1"></main>
+</div>
+<script>"use strict";(()=>{var Z=Object.defineProperty;var X=(e,t)=>{for(var o in t)Z(e,o,{get:t[o],enumerable:!0})};var J=(e,t)=>{for(e=Math.abs(e),t=Math.abs(t);t;)[e,t]=[t,e%t];return e||1},F=class e{constructor(t,o=1){if(o===0)throw new Error("Fraction: zero denominator");if(!Number.isInteger(t)||!Number.isInteger(o)){let a=10**Math.max(W(t),W(o));t=Math.round(t*a),o=Math.round(o*a)}let s=J(t,o),r=o<0?-1:1;this.n=r*t/s,this.d=r*o/s}static of(t){return t instanceof e?t:new e(t)}add(t){let o=e.of(t);return new e(this.n*o.d+o.n*this.d,this.d*o.d)}sub(t){let o=e.of(t);return new e(this.n*o.d-o.n*this.d,this.d*o.d)}mul(t){let o=e.of(t);return new e(this.n*o.n,this.d*o.d)}div(t){let o=e.of(t);return new e(this.n*o.d,this.d*o.n)}neg(){return new e(-this.n,this.d)}cmp(t){let o=e.of(t);return Math.sign(this.n*o.d-o.n*this.d)}eq(t){return this.cmp(t)===0}gt(t){return this.cmp(t)>0}lt(t){return this.cmp(t)<0}gte(t){return this.cmp(t)>=0}isZero(){return this.n===0}valueOf(){return this.n/this.d}toString(){return this.d===1?`${this.n}`:`${this.n}/${this.d}`}};function W(e){let t=String(e),o=t.indexOf(".");return o<0?0:t.length-o-1}function $(e){let{rows:t,cols:o,payoffs:s}=e;if(s.length!==t.length||s.some(r=>r.length!==o.length))throw new Error(`makeGame(${e.id}): payoff matrix is not ${t.length}x${o.length}`);return{id:e.id,title:e.title,players:e.players??["Row","Column"],strategies:[t,o],payoffs:s.map(r=>r.map(([a,i])=>[F.of(a),F.of(i)]))}}var w=e=>[e.strategies[0].map((t,o)=>o),e.strategies[1].map((t,o)=>o)];function T(e,t,o,s){return t===0?e.payoffs[o][s][0]:e.payoffs[s][o][1]}var G=e=>e===0?1:0;function K(e,t,o,s,r){let a=e.payoffs.map(i=>i.map(l=>[l[0],l[1]]));return a[t][o][s]=F.of(r),{...e,payoffs:a}}function C(e,t,o,s=w(e)){let r=s[t],a=null,i=[];for(let l of r){let c=T(e,t,l,o);a===null||c.gt(a)?(a=c,i=[l]):c.eq(a)&&i.push(l)}return i}function _(e,t,o,s,r,a){if(o===s)return!1;let i=!1;for(let l of r[G(t)]){let c=T(e,t,o,l),m=T(e,t,s,l);if(a==="strict"&&!c.gt(m))return!1;if(a==="weak"){if(c.lt(m))return!1;c.gt(m)&&(i=!0)}}return a==="strict"?r[G(t)].length>0:i}function M(e,t,o,s="strict"){let r=[];for(let a of o[t]){let i=o[t].find(l=>_(e,t,l,a,o,s));i!==void 0&&r.push({player:t,dominated:a,by:i,kind:s})}return r}function E(e,t=w(e)){let o=[];for(let s of t[0])for(let r of t[1])C(e,0,r,t).includes(s)&&C(e,1,s,t).includes(r)&&o.push([s,r]);return o}function Y(e){let t=[];return e.payoffs.forEach((o,s)=>o.forEach((r,a)=>t.push([s,a]))),t.filter(([o,s])=>{let[r,a]=e.payoffs[o][s];return!t.some(([i,l])=>{let[c,m]=e.payoffs[i][l];return c.gte(r)&&m.gte(a)&&(c.gt(r)||m.gt(a))})})}var S={};X(S,{advertisingWar:()=>ne,battleOfSexes:()=>se,eliminationPuzzle:()=>te,matchingPennies:()=>oe,prisonersDilemma:()=>ee});var ee=$({id:"pd",title:"Prisoner's Dilemma",players:["You","Partner"],rows:["Stay silent","Confess"],cols:["Stay silent","Confess"],payoffs:[[[-1,-1],[-10,0]],[[0,-10],[-5,-5]]]}),te=$({id:"ieds-3x3",title:"Three rounds of elimination",rows:["Top","Middle","Bottom"],cols:["Left","Centre","Right"],payoffs:[[[4,3],[5,1],[6,2]],[[2,1],[8,4],[3,6]],[[3,0],[9,6],[2,8]]]}),ne=$({id:"ads",title:"Advertising war",players:["Coke","Pepsi"],rows:["Advertise","Don't"],cols:["Advertise","Don't"],payoffs:[[[3,3],[6,1]],[[1,6],[5,5]]]}),oe=$({id:"pennies",title:"Matching Pennies",rows:["Heads","Tails"],cols:["Heads","Tails"],payoffs:[[[1,-1],[-1,1]],[[-1,1],[1,-1]]]}),se=$({id:"bos",title:"Battle of the Sexes",rows:["Opera","Football"],cols:["Opera","Football"],payoffs:[[[3,2],[0,0]],[[0,0],[2,3]]]});function n(e,t=null,...o){let s=document.createElement(e);if(t)for(let[r,a]of Object.entries(t))a==null||a===!1||(r.startsWith("on")&&typeof a=="function"?s.addEventListener(r.slice(2),a):r==="html"?s.innerHTML=String(a):r==="dataset"?Object.assign(s.dataset,a):s.setAttribute(r,a===!0?"":String(a)));return j(s,o),s}function j(e,t){for(let o of t)o==null||o===!1||(Array.isArray(o)?j(e,o):e.appendChild(typeof o=="object"?o:document.createTextNode(String(o))))}var v=e=>{for(;e.firstChild;)e.removeChild(e.firstChild)},A=(e,...t)=>n("div",{class:`depth depth-${e}`},n("span",{class:"depth-tag"},e==="formal"?"Formal":"Quant"),...t),R={get(e){try{return localStorage.getItem(e)}catch{return null}},set(e,t){try{localStorage.setItem(e,t)}catch{}}};function x(e,t={}){let o=t.alive??w(e),s=t.showNash?E(e,o):[],r=(d,h)=>s.some(([b,p])=>b===d&&p===h),a=(d,h)=>(t.highlight??[]).some(([b,p])=>b===d&&p===h),i=d=>t.showBestResponses?C(e,0,d,o):[],l=d=>t.showBestResponses?C(e,1,d,o):[],c=(d,h)=>{let b=!o[d].includes(h),p=t.flag?.player===d&&t.flag.index===h,g=`strat strat-p${d}${b?" dead":""}${p?" flagged":""}`,k=e.strategies[d][h];return t.onStrategy&&!b?n("button",{class:g,type:"button",onclick:()=>t.onStrategy(d,h),"aria-label":`${e.players[d]}: ${k}`},k):n("span",{class:g},k)},m=(d,h,b,p)=>{let g=e.payoffs[d][h][b].toString(),k=`pay pay-p${b}${p?" best":""}`;return t.editable?n("input",{class:k,value:g,inputmode:"decimal","aria-label":`${e.players[b]} payoff at ${e.strategies[0][d]} / ${e.strategies[1][h]}`,size:Math.max(2,g.length),onchange:I=>{let H=I.target,O=Number(H.value);Number.isFinite(O)?t.onEdit?.(d,h,b,O):H.value=g},onclick:I=>I.stopPropagation()}):n("span",{class:k},g)},u=n("tr",null,n("th",{class:"corner"},n("span",{class:"who who-p1"},e.players[1]),n("span",{class:"who who-p0"},e.players[0])),e.strategies[1].map((d,h)=>n("th",{scope:"col"},c(1,h)))),f=e.strategies[0].map((d,h)=>n("tr",null,n("th",{scope:"row"},c(0,h)),e.strategies[1].map((b,p)=>{let g=!o[0].includes(h)||!o[1].includes(p),k=["cell",g&&"dead",r(h,p)&&!g&&"nash",a(h,p)&&"hi",t.onCell&&!g&&"clickable"].filter(Boolean).join(" ");return n("td",{class:k,onclick:t.onCell&&!g?()=>t.onCell(h,p):null},n("div",{class:"split"},m(h,p,1,l(h).includes(p)),m(h,p,0,i(p).includes(h))))})));return n("figure",{class:"matrix-wrap"},n("table",{class:"matrix"},n("thead",null,u),n("tbody",null,f)),t.caption?n("figcaption",null,t.caption):null)}var D=e=>n("p",{class:"key"},n("span",{class:"chip chip-p0"},e.players[0])," payoff bottom-left, ",n("span",{class:"chip chip-p1"},e.players[1])," payoff top-right.");var{prisonersDilemma:P,eliminationPuzzle:re,advertisingWar:ae}=S;function z(e){e.append(n("p",{class:"lede"},"Two suspects are arrested and held in separate rooms. The police offer each the same deal. ","Each would be better off if both kept quiet, and yet both will almost certainly talk. ","This chapter shows why, using the first and simplest idea in game theory: dominance."),n("h2",null,"Make your choice"),n("p",null,"You and your partner can each stay silent or confess. If you both stay silent, you each get a year on a minor charge. ","If you both confess, five years each. If one confesses and the other stays silent, the confessor walks free and the silent one gets ten."),ie(),n("h2",null,"Whatever they do, confess"),n("p",null,"Look at it one column at a time. If your partner stays silent, confessing gets you 0 years instead of 1. ","If your partner confesses, confessing gets you 5 years instead of 10. Either way, confessing is better."),n("p",null,"When one strategy beats another against everything the other player might do, game theorists say it ",n("em",null,"strictly dominates")," it. A rational player never plays a dominated strategy, so you don't need to guess what your partner will do at all."),D(P),x(P,{showBestResponses:!0,caption:"Underlined payoffs are each player's best reply to the other's choice. Payoffs are minus years in prison."}),n("p",null,"Your partner faces exactly the same table, so they confess too. Both of you get five years, even though staying silent together would have cost only one. ","Each player's individually sensible choice adds up to a collectively bad outcome. That gap is the dilemma."),A("formal",n("p",null,"Write ",n("i",null,"u"),n("sub",null,"i"),"(",n("i",null,"s"),n("sub",null,"i"),", ",n("i",null,"s"),n("sub",null,"\u2212i"),") for player ",n("i",null,"i"),"'s payoff when they play ",n("i",null,"s"),n("sub",null,"i")," and everyone else plays ",n("i",null,"s"),n("sub",null,"\u2212i"),"."),n("p",null,"Strategy ",n("i",null,"a")," strictly dominates ",n("i",null,"b")," for player ",n("i",null,"i")," if ",n("span",{class:"math"},"u",n("sub",null,"i"),"(a, s",n("sub",null,"\u2212i"),") > u",n("sub",null,"i"),"(b, s",n("sub",null,"\u2212i"),") for every s",n("sub",null,"\u2212i"),".")," If one strategy strictly dominates every other, it is a ",n("em",null,"dominant strategy"),", and a profile where every player uses one is a dominant-strategy equilibrium."),n("p",null,"The outcome (Confess, Confess) is not ",n("em",null,"Pareto optimal"),": switching both players to (Silent, Silent) makes both strictly better off. The Prisoner's Dilemma is the standard example of an equilibrium that is not Pareto optimal.")),n("h2",null,"Strike them out"),n("p",null,"Most games don't have a dominant strategy. You can often still solve them by repeatedly crossing out dominated strategies: ","once a strategy is gone, the other player can stop worrying about it, which may make one of ",n("em",null,"their")," strategies dominated in turn."),n("p",null,"Click a strategy you think is dominated. Use ",n("strong",null,"Show next step")," if you get stuck."),le(re),A("formal",n("p",null,"This procedure is ",n("em",null,"iterated elimination of strictly dominated strategies")," (IEDS). It assumes more than rationality: Column must know Row is rational, Row must know that Column knows, and so on. ","Each extra round of elimination needs one more level of this ",n("em",null,"common knowledge of rationality"),"."),n("p",null,"For strict dominance, the order in which you remove strategies does not change what survives. ","With weak dominance (better somewhere, never worse) it can, so the engine on this site uses strict dominance unless a chapter says otherwise.")),n("h2",null,"Break the dilemma"),n("p",null,"The dilemma comes from the numbers, not the story. Edit any payoff below and the solver re-checks the game. ","Can you change one number so that self-interest leads both players to stay silent?"),ue(),n("h2",null,"Where it shows up"),n("p",null,"Swap prisoners for firms and you get an advertising war. Each firm earns more by advertising whatever its rival does, ","so both spend heavily and end up with lower profits than if neither had advertised."),x(ae,{showBestResponses:!0,showNash:!0,caption:"Profits in $bn. The ringed cell is the equilibrium."}),n("p",null,"The same structure appears in arms races, overfishing, price wars and cartels. ","OPEC members agree to cut output, then each has an incentive to pump more than its quota. ","Chapter 6 shows how repetition, the fact that firms and countries meet again next year, can rescue cooperation."),A("quant",n("p",null,"Interviewers like dominance because it is fast to check. Train the scan below until a 3\xD73 takes you under five seconds."),de()),n("aside",{class:"tip"},n("strong",null,"Shorthand to remember: "),"a dominant row wins every column. Scan column by column; one loss anywhere means it is not dominant."))}function ie(){let e=P,t=n("div",{class:"interactive"}),o=r=>r===0?"go free":`get ${-r} year${r===-1?"":"s"}`,s=r=>{if(v(t),r===null){t.append(n("p",{class:"prompt"},"Your partner is deciding in the next room. What do you do?"),n("div",{class:"choices"},e.strategies[0].map((m,u)=>n("button",{class:"btn btn-p0",type:"button",onclick:()=>s(u)},m))));return}let a=Math.random()<.7?1:0,[i]=e.payoffs[r][a],l=1-r,c=[0,1].map(m=>{let u=e.payoffs[r][m][0].valueOf(),f=e.payoffs[l][m][0].valueOf();return n("li",null,`If your partner chose ${e.strategies[1][m].toLowerCase()}: you'd ${o(u)} by choosing ${e.strategies[0][r].toLowerCase()}, `,`or ${o(f)} by choosing ${e.strategies[0][l].toLowerCase()}.`)});t.append(n("p",{class:"result"},`You chose ${e.strategies[0][r].toLowerCase()}. Your partner chose ${e.strategies[1][a].toLowerCase()}. You ${o(i.valueOf())}.`),x(e,{highlight:[[r,a]]}),n("ul",{class:"compare"},c),n("p",null,r===1?"Notice that confessing was the better choice in both cases, so you didn't need to know what your partner would do.":"Look at both lines: in each case, confessing would have been better for you. That holds whatever your partner does."),n("button",{class:"btn btn-quiet",type:"button",onclick:()=>s(null)},"Play again"))};return s(null),t}function le(e){let t=n("div",{class:"interactive"}),o=w(e),s=null,r=(l,c)=>e.strategies[l][c],a=(l,c)=>{o=[o[0].slice(),o[1].slice()],o[l]=o[l].filter(m=>m!==c)},i=()=>{v(t);let l=[...M(e,0,o),...M(e,1,o)],c=l.length===0,m=o[0].length===1&&o[1].length===1;t.append(x(e,{alive:o,showNash:c,onStrategy:c?void 0:(u,f)=>{let d=M(e,u,o).find(h=>h.dominated===f);d?(a(u,f),s=n("p",{class:"feedback good"},`Correct. For ${e.players[u]}, ${r(u,d.by)} beats ${r(u,f)} against every remaining choice, so ${r(u,f)} goes.`)):s=n("p",{class:"feedback bad"},`${r(u,f)} isn't dominated yet. Compare it column by column with each other ${e.players[u]} strategy: some remaining choice still makes it at least as good.`),i()}}),c?n("p",{class:"feedback done"},m?`Solved. Only (${r(0,o[0][0])}, ${r(1,o[1][0])}) survives, and it is the game's unique Nash equilibrium.`:"Nothing else is dominated. Elimination can't finish this game on its own; Chapter 2 takes over from here."):s??"",n("div",{class:"controls"},c?null:n("button",{class:"btn btn-quiet",type:"button",onclick:()=>{let u=l[0];a(u.player,u.dominated),s=n("p",{class:"feedback"},`For ${e.players[u.player]}, ${r(u.player,u.by)} beats ${r(u.player,u.dominated)} against every remaining choice, so ${r(u.player,u.dominated)} goes.`),i()}},"Show next step"),n("button",{class:"btn btn-quiet",type:"button",onclick:()=>{o=w(e),s=null,i()}},"Reset")))};return i(),t}function ue(){let e=P,t=n("div",{class:"interactive"}),o=()=>{let r=E(e),a=Y(e),i=([m,u])=>`(${e.strategies[0][m]}, ${e.strategies[1][u]})`;if(r.length===0)return n("p",{class:"feedback"},"No pure-strategy equilibrium at all. Chapter 3 shows what players do then: randomise.");if(r.length>1)return n("p",{class:"feedback"},`Now there are ${r.length} equilibria: ${r.map(i).join(" and ")}. That is a coordination problem, the subject of Chapter 2.`);let[l]=r;return a.some(([m,u])=>m===l[0]&&u===l[1])?n("p",{class:"feedback good"},`Dilemma broken. The equilibrium is ${i(l)}, and no other outcome makes both players better off.`):n("p",{class:"feedback bad"},`Still a dilemma. The equilibrium is ${i(l)}, but another outcome would make both players better off.`)},s=()=>{v(t),t.append(x(e,{editable:!0,showBestResponses:!0,showNash:!0,onEdit:(r,a,i,l)=>{e=K(e,r,a,i,l),s()},caption:"Click a number to edit it. Underlines and the ring update as you type."}),o(),n("div",{class:"controls"},n("button",{class:"btn btn-quiet",type:"button",onclick:()=>{e=P,s()}},"Reset payoffs")))};return s(),t}function ce(){let e=()=>Math.floor(Math.random()*10),t=[0,1,2].map(()=>[0,1,2].map(()=>[e(),e()]));if(Math.random()<.55){let o=Math.floor(Math.random()*3);for(let s=0;s<3;s++){let r=Math.max(...[0,1,2].filter(a=>a!==o).map(a=>t[a][s][0]));t[o][s][0]=Math.min(r+1+Math.floor(Math.random()*2),11)}}return $({id:"drill",title:"Drill",rows:["A","B","C"],cols:["X","Y","Z"],payoffs:t})}function me(e){let t=w(e),o=new Set(M(e,0,t).map(s=>s.dominated));return o.size!==2?null:[0,1,2].find(s=>!o.has(s))??null}function de(){let e=n("div",{class:"interactive drill"}),t=0,o=0,s=[],r=a=>{let i=ce(),l=me(i),c=performance.now();v(e);let m=u=>{let f=performance.now()-c,d=u===l;d?(t++,o=Math.max(o,t),s=[...s,f].slice(-10)):t=0;let h=s.length?s.reduce((b,p)=>b+p,0)/s.length/1e3:0;r(n("p",{class:`feedback ${d?"good":"bad"}`},d?`Correct in ${(f/1e3).toFixed(1)}s.`:`Not quite: ${l===null?"no row was dominant":`${i.strategies[0][l]} was dominant`}.`,` Streak ${t}, best ${o}${h?`, average ${h.toFixed(1)}s`:""}.`))};e.append(n("p",{class:"prompt"},"Does Row have a strictly dominant strategy?"),x(i),n("div",{class:"choices"},i.strategies[0].map((u,f)=>n("button",{class:"btn btn-p0",type:"button",onclick:()=>m(f)},u)),n("button",{class:"btn btn-quiet",type:"button",onclick:()=>m(null)},"None")),a??"")};return r(),e}var y=["Static games","Dynamics","Information","Design"],N=[{num:1,part:y[0],title:"Dominance and the Prisoner's Dilemma",blurb:"Why two rational people end up worse off than two cooperative ones.",render:z},{num:2,part:y[0],title:"Nash equilibrium",blurb:"When nobody wants to move, given what everyone else is doing."},{num:3,part:y[0],title:"Mixed strategies",blurb:"Penalty kicks, poker bluffs and the art of being unpredictable."},{num:4,part:y[1],title:"Sequential games",blurb:"Look forward, reason backward."},{num:5,part:y[1],title:"Commitment and credibility",blurb:"Why burning your bridges can win the battle."},{num:6,part:y[1],title:"Repeated games",blurb:"How cooperation survives when the game never ends."},{num:7,part:y[1],title:"Evolution",blurb:"Strategies that breed, compete and take over a population."},{num:8,part:y[2],title:"Signalling",blurb:"Degrees, dividends and other costly ways to prove you're good."},{num:9,part:y[2],title:"Auctions",blurb:"How to bid, and why the seller often doesn't care which format."},{num:10,part:y[2],title:"Bargaining",blurb:"Splitting a pie that shrinks while you argue."},{num:11,part:y[3],title:"Mechanism design",blurb:"Writing the rules so that telling the truth is the best move."},{num:12,part:y[3],title:"Matching",blurb:"Doctors, schools and kidneys: stable pairings without prices."}],B=e=>N.find(t=>t.num===e);var he=[{id:"intuition",label:"Intuition",hint:"Plain language, no notation"},{id:"formal",label:"Formal",hint:"Adds definitions and notation"},{id:"quant",label:"Quant",hint:"Adds timed drills for interviews"}],L=document.getElementById("main"),q=document.getElementById("toc"),Q=document.getElementById("depth");function V(e){document.documentElement.dataset.depth=e,R.set("eq-depth",e),Q.querySelectorAll("button").forEach(t=>t.setAttribute("aria-pressed",String(t.dataset.depth===e)))}function pe(){Q.append(n("span",{class:"depth-label",id:"depth-label"},"Depth"),...he.map(e=>n("button",{type:"button",dataset:{depth:e.id},title:e.hint,onclick:()=>V(e.id)},e.label))),V(R.get("eq-depth")||"intuition")}function fe(e){v(q),q.append(n("a",{href:"#/",class:`toc-home${e===null?" active":""}`},"Introduction")),y.forEach((t,o)=>{q.append(n("p",{class:"toc-part"},`Part ${["I","II","III","IV"][o]}. ${t}`)),q.append(n("ol",{class:"toc-list",start:N.find(s=>s.part===t).num},N.filter(s=>s.part===t).map(s=>n("li",null,s.render?n("a",{href:`#/${s.num}`,class:e===s.num?"active":"","aria-current":e===s.num?"page":null},s.title):n("span",{class:"soon",title:"Coming soon"},s.title)))))})}function be(){let e=S.prisonersDilemma,t=n("p",{class:"hero-status","aria-live":"polite"},"Click the cell where you think both players end up."),o=n("div",null),s=null,r=()=>{v(o),o.append(x(e,{showBestResponses:s!==null,showNash:s!==null,highlight:s?[s]:[],onCell:(i,l)=>{s=[i,l];let c=E(e).some(([f,d])=>f===i&&d===l),m=C(e,0,l).includes(i),u=C(e,1,i).includes(l);t.textContent=c?"Right. Neither player can do better by switching alone, even though both would prefer the top-left cell.":`Not stable. ${m?"":`${e.players[0]} would switch to ${e.strategies[0][1-i].toLowerCase()}`}${!m&&!u?", and ":""}${u?"":`${e.players[1]} would switch to ${e.strategies[1][1-l].toLowerCase()}`}. The ringed cell is where it settles.`,r()}}))};r();let a=N.filter(i=>i.render);L.append(n("header",{class:"hero"},n("h1",null,"Equilibrium"),n("p",{class:"hero-sub"},"An interactive course in game theory. Every game on this site is solved live by an engine you can poke at."),n("div",{class:"hero-game"},D(e),o,t)),n("section",{class:"intro"},n("p",null,"Game theory is the maths of decisions that depend on other people's decisions. ","It explains why cartels collapse, why auctions are designed the way they are, and why firms pay dividends they don't need to."),n("p",null,"Use the depth switch at the top to choose how much maths you want. ",n("strong",null,"Intuition")," keeps it to plain language, ",n("strong",null,"Formal")," adds the definitions you'd see in a university course, and ",n("strong",null,"Quant")," adds timed drills in the style of trading interviews."),n("a",{class:"btn btn-p0 start",href:`#/${a[0].num}`},`Start with Chapter ${a[0].num}`)),n("section",{class:"chapter-list"},n("h2",null,"Chapters"),n("ol",null,N.map(i=>n("li",{class:i.render?"":"is-soon"},i.render?n("a",{href:`#/${i.num}`},i.title):n("span",null,i.title),n("span",{class:"blurb"},i.render?i.blurb:`${i.blurb} Coming soon.`))))))}function ye(e){let t=B(e);if(!t||!t.render)return ge();let o=n("article",{class:"chapter"},n("p",{class:"chapter-num"},`Chapter ${t.num}`),n("h1",null,t.title));t.render(o);let s=N.find(r=>r.num===e+1);o.append(n("nav",{class:"pager"},s?.render?n("a",{href:`#/${s.num}`,class:"btn btn-p0"},`Next: ${s.title}`):s?n("p",{class:"soon-note"},`Next up: Chapter ${s.num}, ${s.title}. Coming soon.`):null)),L.append(o)}function ge(){L.append(n("article",{class:"chapter"},n("h1",null,"That page doesn't exist yet"),n("p",null,n("a",{href:"#/"},"Go back to the introduction")," to see which chapters are ready.")))}function U(){let e=location.hash.match(/^#\/(\d+)/),t=e?Number(e[1]):null;v(L),fe(t),t===null?be():ye(t),document.body.classList.remove("toc-open"),window.scrollTo(0,0),document.title=t===null?"Equilibrium: game theory, solved live":`${B(t)?.title??"Not found"} \xB7 Equilibrium`}document.getElementById("toc-toggle").addEventListener("click",()=>document.body.classList.toggle("toc-open"));pe();window.addEventListener("hashchange",U);U();})();
+</script>
+</body>
+</html>

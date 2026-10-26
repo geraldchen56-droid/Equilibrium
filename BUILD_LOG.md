@@ -1,0 +1,29 @@
+# Equilibrium build log
+
+Plan doc: https://claude.ai/artifact/5ugdymJFr35JWSh67yHcZk
+
+## Status
+| Item | State |
+| --- | --- |
+| Engine: Fraction, NormalFormGame, best responses, strict/weak dominance, IEDS, pure Nash, 2x2 mixed, Pareto | Done, 13 tests |
+| Shell: hash router, depth toggle (intuition/formal/quant), TOC, home hero, single-file build | Done |
+| Ch 1 Dominance & PD | Done |
+| Ch 2 Nash equilibrium | NEXT |
+| Ch 3 Mixed strategies | Todo (engine `mixed2x2` already exists) |
+| Sandbox page | Todo (Phase 1) |
+| Ch 4-12, case studies | Later phases |
+
+## Conventions
+- Engine (`src/engine`) is pure TS, no DOM. Every new solver gets tests in `tests/`.
+- Payoffs are `Fraction`s; build games with `makeGame({...})`. Canonical games live in `library.ts`.
+- Chapter = `src/chapters/chNN-name.ts` exporting `renderChNN(root)`; register in `src/chapters/index.ts` (set `render`).
+- UI helpers: `h()` / `depth("formal"|"quant", ...)` in `ui/dom.ts`; `payoffMatrix(game, opts)` in `ui/matrix.ts`.
+- Colours: Row = cobalt (`--row`), Column = marigold (`--col`), equilibrium = green (`--eq`). Schelling notation: Row payoff bottom-left, Column top-right.
+- Chapter shape: lede, play-first interactive, idea, formal box, stepper/editor, real-world link, quant drill, one "shorthand to remember" tip.
+- Never append `null` with `el.append` (prints "null"); use `""` or `h()`.
+
+## Commands
+- `npm install` then `npx vitest run` (tests) and `node build.mjs` (writes dist/equilibrium.html + dist/index.html).
+
+## Log
+- 2026-10-26: Phase 0 + Ch 1 shipped. dist/equilibrium.html ~33 KB.
