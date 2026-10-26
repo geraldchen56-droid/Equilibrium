@@ -1,4 +1,4 @@
-import { Alive, NormalFormGame, Profile, allAlive, bestResponses, pureNash } from "../engine";
+import { Alive, NormalFormGame, Profile, allAlive, bestResponses, deviations, pureNash } from "../engine";
 import { h } from "./dom";
 
 export interface MatrixOptions {
@@ -17,6 +17,10 @@ export interface MatrixOptions {
   editable?: boolean;
   onEdit?: (r: number, c: number, who: 0 | 1, value: number) => void;
   caption?: string;
+  /** Draw each player's urge to switch: Row as a cobalt up/down arrow, Column as a marigold left/right arrow. */
+  arrows?: boolean;
+  /** Cells the reader has marked as guesses. */
+  marked?: Profile[];
 }
 
 /**
@@ -28,6 +32,16 @@ export function payoffMatrix(g: NormalFormGame, o: MatrixOptions = {}): HTMLElem
   const nash = o.showNash ? pureNash(g, alive) : [];
   const isNash = (r: number, c: number) => nash.some(([a, b]) => a === r && b === c);
   const isHi = (r: number, c: number) => (o.highlight ?? []).some(([a, b]) => a === r && b === c);
+  const isMarked = (r: number, c: number) => (o.marked ?? []).some(([a, b]) => a === r && b === c);
+  const arrowsFor = (r: number, c: number) => {
+    if (!o.arrows) return null;
+    const d = deviations(g, r, c, alive);
+    const name = (p: 0 | 1, i: number) => g.strategies[p][i];
+    return [
+      d.col !== null ? h("span", { class: "arrow arrow-p1", title: `${g.players[1]} would switch to ${name(1, d.col)}` }, d.col < c ? "←" : "→") : null,
+      d.row !== null ? h("span", { class: "arrow arrow-p0", title: `${g.players[0]} would switch to ${name(0, d.row)}` }, d.row < r ? "↑" : "↓") : null,
+    ];
+  };
   const rowBR = (c: number) => (o.showBestResponses ? bestResponses(g, 0, c, alive) : []);
   const colBR = (r: number) => (o.showBestResponses ? bestResponses(g, 1, r, alive) : []);
 
@@ -69,11 +83,12 @@ export function payoffMatrix(g: NormalFormGame, o: MatrixOptions = {}): HTMLElem
       h("th", { scope: "row" }, stratLabel(0, r)),
       g.strategies[1].map((_, c) => {
         const dead = !alive[0].includes(r) || !alive[1].includes(c);
-        const cls = ["cell", dead && "dead", isNash(r, c) && !dead && "nash", isHi(r, c) && "hi", o.onCell && !dead && "clickable"].filter(Boolean).join(" ");
+        const cls = ["cell", dead && "dead", isNash(r, c) && !dead && "nash", isHi(r, c) && "hi", isMarked(r, c) && "marked", o.onCell && !dead && "clickable"].filter(Boolean).join(" ");
         return h("td", { class: cls, onclick: o.onCell && !dead ? () => o.onCell!(r, c) : null },
           h("div", { class: "split" },
             num(r, c, 1, colBR(r).includes(c)),
-            num(r, c, 0, rowBR(c).includes(r))));
+            num(r, c, 0, rowBR(c).includes(r)),
+            arrowsFor(r, c)));
       })));
 
   return h("figure", { class: "matrix-wrap" },

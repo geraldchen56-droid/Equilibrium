@@ -142,3 +142,31 @@ export function paretoOptimal(g: NormalFormGame): Profile[] {
     });
   });
 }
+
+// ---------- Unilateral deviations (the "no regrets" test) ----------
+
+export interface Deviation {
+  /** A strictly better Row strategy against this column, or null if Row is happy. */
+  row: number | null;
+  /** A strictly better Column strategy against this row, or null if Column is happy. */
+  col: number | null;
+}
+
+/**
+ * Would either player switch away from (r, c) on their own?
+ * Returns the best strictly-improving switch for each player (first one if tied).
+ * A profile with no deviations is a Nash equilibrium.
+ */
+export function deviations(g: NormalFormGame, r: number, c: number, alive = allAlive(g)): Deviation {
+  const rowBest = bestResponses(g, 0, c, alive)[0];
+  const colBest = bestResponses(g, 1, r, alive)[0];
+  return {
+    row: g.payoffs[rowBest][c][0].gt(g.payoffs[r][c][0]) ? rowBest : null,
+    col: g.payoffs[r][colBest][1].gt(g.payoffs[r][c][1]) ? colBest : null,
+  };
+}
+
+export const isNash = (g: NormalFormGame, [r, c]: Profile, alive = allAlive(g)) => {
+  const d = deviations(g, r, c, alive);
+  return d.row === null && d.col === null;
+};
