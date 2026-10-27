@@ -1,7 +1,7 @@
 # Equilibrium build log
 
 Plan doc: https://claude.ai/artifact/5ugdymJFr35JWSh67yHcZk
-Live: https://equilibrium-kohl-seven.vercel.app (Vercel project `equilibrium`; every push to main deploys via vercel.json: `node build.mjs` -> dist/)
+Live: https://equilibrium-lab.vercel.app (Vercel project `equilibrium`; every push to main deploys via vercel.json: `node build.mjs` -> dist/)
 
 ## Status
 | Item | State |
