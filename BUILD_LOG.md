@@ -1,6 +1,5 @@
 # Equilibrium build log
 
-Plan doc: https://claude.ai/artifact/5ugdymJFr35JWSh67yHcZk
 Live: https://equilibrium-lab.vercel.app (Vercel project `equilibrium`; every push to main deploys via vercel.json: `node build.mjs` -> dist/)
 
 ## Status
@@ -29,7 +28,7 @@ Live: https://equilibrium-lab.vercel.app (Vercel project `equilibrium`; every pu
 - Landing photos: real Unsplash photographs only (credited in the footer), stored as WebP in `public/img` and copied to `dist/img` by build.mjs. Never use AI-generated images of rule-bound objects (chess, cards, Go, equations): they come out wrong.
 - Landing type: Fraunces 200 (display) + Geist 300 (text). Landing is dark in both colour schemes; chapters keep the original theme.
 
-- Git: commits are authored as Gerald Chen <geraldchen55@gmail.com> with no Claude co-author or session lines. Set `git config user.name/user.email` in the repo before committing.
+- Git: commits are authored as Gerald Chen <geraldchen56@gmail.com>, with no co-author or session lines. Set `git config user.name/user.email` in the repo before committing.
 
 ## Commands
 - `npm install` then `npx vitest run` (tests) and `node build.mjs` (writes dist/equilibrium.html + dist/index.html).
