@@ -1,6 +1,7 @@
 # Equilibrium build log
 
 Plan doc: https://claude.ai/artifact/5ugdymJFr35JWSh67yHcZk
+Live: https://equilibrium-kohl-seven.vercel.app (Vercel project `equilibrium`; every push to main deploys via vercel.json: `node build.mjs` -> dist/)
 
 ## Status
 | Item | State |
@@ -30,3 +31,4 @@ Plan doc: https://claude.ai/artifact/5ugdymJFr35JWSh67yHcZk
 ## Log
 - 2026-10-26: Phase 0 + Ch 1 shipped. dist/equilibrium.html ~33 KB.
 - 2026-10-26: Ch 2 Nash equilibrium shipped (switch tester, hunt-the-equilibria, editable classic-games gallery, Bertrand price war, count-the-equilibria drill). Mobile: big matrices scroll sideways. ~47 KB.
+- 2026-10-27: Repo on GitHub, Vercel project linked, Web Analytics script added, card added to projects page.
