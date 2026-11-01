@@ -35,9 +35,9 @@ function buildToc(active: number | null) {
   nav.append(h("a", { href: "#/", class: `toc-home${active === null ? " active" : ""}` }, "Home"));
   PARTS.forEach((part, pi) => {
     nav.append(h("p", { class: "toc-part" }, `Part ${["I", "II", "III", "IV"][pi]}. ${part}`));
-    nav.append(h("ol", { class: "toc-list", start: CHAPTERS.find((c) => c.part === part)!.num },
+    nav.append(h("ol", { class: "toc-list" },
       CHAPTERS.filter((c) => c.part === part).map((c) =>
-        h("li", null, c.render
+        h("li", { "data-n": c.num }, c.render
           ? h("a", { href: `#/${c.num}`, class: active === c.num ? "active" : "", "aria-current": active === c.num ? "page" : null }, c.title)
           : h("span", { class: "soon", title: "Coming soon" }, c.title)))));
   });
@@ -47,19 +47,44 @@ function buildToc(active: number | null) {
 
 let cleanup: (() => void) | null = null;
 
+const PART_PHOTO = ["static", "dynamics", "information", "design"];
+
 function chapterPage(n: number) {
   const c = chapter(n);
   if (!c || !c.render) return notFound();
-  const body = h("article", { class: "chapter" },
-    h("p", { class: "chapter-num" }, `Chapter ${c.num}`),
-    h("h1", null, c.title));
+  const pi = Math.max(0, PARTS.indexOf(c.part));
+  const img = PART_PHOTO[pi];
+  const head = h("header", { class: "ch-head" },
+    h("img", { src: `img/${img}-sm.webp`, srcset: `img/${img}-sm.webp 1280w, img/${img}.webp 2560w`, sizes: "100vw", alt: "", decoding: "async", fetchpriority: "high" }),
+    h("p", { class: "chapter-num" }, `Part ${["I", "II", "III", "IV"][pi]} · Chapter ${c.num}`),
+    h("h1", null, c.title),
+    h("p", { class: "ch-blurb" }, c.blurb));
+  const body = h("article", { class: "chapter" });
   c.render(body);
+  const prevC = CHAPTERS.find((x) => x.num === n - 1 && x.render);
   const nextC = CHAPTERS.find((x) => x.num === n + 1);
-  body.append(h("nav", { class: "pager" },
+  body.append(h("nav", { class: "pager", "aria-label": "Chapter navigation" },
+    prevC ? h("a", { href: `#/${prevC.num}`, class: "prev" }, h("span", { class: "lbl" }, `Previous · ${prevC.num}`), h("span", { class: "ttl" }, prevC.title)) : "",
     nextC?.render
-      ? h("a", { href: `#/${nextC.num}`, class: "btn btn-p0" }, `Next: ${nextC.title}`)
-      : nextC ? h("p", { class: "soon-note" }, `Next up: Chapter ${nextC.num}, ${nextC.title}. Coming soon.`) : null));
-  main.append(body);
+      ? h("a", { href: `#/${nextC.num}`, class: "next" }, h("span", { class: "lbl" }, `Next · ${nextC.num}`), h("span", { class: "ttl" }, nextC.title))
+      : nextC ? h("p", { class: "soon-note next" }, `Next up: Chapter ${nextC.num}, ${nextC.title}. Coming soon.`)
+        : h("a", { href: "#/", class: "next" }, h("span", { class: "lbl" }, "The end"), h("span", { class: "ttl" }, "Back to the start"))));
+  main.append(head, body);
+  requestAnimationFrame(() => requestAnimationFrame(() => head.classList.add("is-in")));
+  cleanup = revealOnScroll(body);
+}
+
+/** Fade sections in as they enter the viewport. Interactive panels never hide, so nothing is unusable. */
+function revealOnScroll(root: HTMLElement): () => void {
+  if (!("IntersectionObserver" in window) || matchMedia("(prefers-reduced-motion: reduce)").matches) return () => {};
+  const items = Array.from(root.querySelectorAll<HTMLElement>(":scope > h2, :scope > p, :scope > figure, :scope > .depth, :scope > aside"));
+  const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+    if (e.isIntersecting) { e.target.classList.add("is-in"); io.unobserve(e.target); }
+  }), { rootMargin: "0px 0px -8% 0px" });
+  items.forEach((el) => {
+    if (el.getBoundingClientRect().top > window.innerHeight) { el.classList.add("reveal"); io.observe(el); }
+  });
+  return () => io.disconnect();
 }
 
 function notFound() {

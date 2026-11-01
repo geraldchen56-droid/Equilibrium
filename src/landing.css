@@ -1,6 +1,6 @@
 /* ================= Landing page (#/) =================
    Photographic, full-bleed and dark in both colour schemes: the photos set the mood,
-   so the page doesn't flip to a light theme. Course pages keep their own theme. */
+   and the course pages (styles.css) now share the same dark language. */
 
 body.landing { background: #000; }
 body.landing .topbar, body.landing .toc { display: none; }
