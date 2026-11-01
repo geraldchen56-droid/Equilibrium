@@ -11,3 +11,5 @@ export * as evolution from "./evolution";
 export * as signalling from "./signalling";
 export * as auctions from "./auctions";
 export * as bargaining from "./bargaining";
+export * as mechanism from "./mechanism";
+export * as matching from "./matching";

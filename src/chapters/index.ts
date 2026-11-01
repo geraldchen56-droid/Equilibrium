@@ -8,6 +8,8 @@ import { renderCh07 } from "./ch07-evolution";
 import { renderCh08 } from "./ch08-signalling";
 import { renderCh09 } from "./ch09-auctions";
 import { renderCh10 } from "./ch10-bargaining";
+import { renderCh11 } from "./ch11-mechanism";
+import { renderCh12 } from "./ch12-matching";
 
 export interface Chapter {
   num: number;
@@ -31,8 +33,8 @@ export const CHAPTERS: Chapter[] = [
   { num: 8, part: PARTS[2], title: "Signalling", blurb: "Degrees, dividends and other costly ways to prove you're good.", render: renderCh08 },
   { num: 9, part: PARTS[2], title: "Auctions", blurb: "How to bid, and why the seller often doesn't care which format.", render: renderCh09 },
   { num: 10, part: PARTS[2], title: "Bargaining", blurb: "Splitting a pie that shrinks while you argue.", render: renderCh10 },
-  { num: 11, part: PARTS[3], title: "Mechanism design", blurb: "Writing the rules so that telling the truth is the best move." },
-  { num: 12, part: PARTS[3], title: "Matching", blurb: "Doctors, schools and kidneys: stable pairings without prices." },
+  { num: 11, part: PARTS[3], title: "Mechanism design", blurb: "Writing the rules so that telling the truth is the best move.", render: renderCh11 },
+  { num: 12, part: PARTS[3], title: "Matching", blurb: "Doctors, schools and kidneys: stable pairings without prices.", render: renderCh12 },
 ];
 
 export const chapter = (n: number) => CHAPTERS.find((c) => c.num === n);
