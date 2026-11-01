@@ -7,3 +7,5 @@ export * from "./mixed";
 export * from "./tree";
 export * as commitment from "./commitment";
 export * as repeated from "./repeated";
+export * as evolution from "./evolution";
+export * as signalling from "./signalling";

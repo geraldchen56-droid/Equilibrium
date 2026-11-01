@@ -294,3 +294,6 @@ td.chip-p0, td.chip-p1 { font-weight: 400; }
 }
 .btn.on, .btn[aria-pressed="true"].btn-quiet { border-color: var(--ink); color: var(--ink); background: var(--panel-2); }
 .display .math { white-space: normal; }
+.band { position: relative; height: 14px; background: var(--grid); margin: 18px 0 8px; max-width: 600px; }
+.band-ok { position: absolute; top: 0; bottom: 0; background: var(--eq); opacity: .55; transition: left .3s, width .3s; }
+.band-mark { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); transition: left .2s; }
