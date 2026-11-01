@@ -9,3 +9,5 @@ export * as commitment from "./commitment";
 export * as repeated from "./repeated";
 export * as evolution from "./evolution";
 export * as signalling from "./signalling";
+export * as auctions from "./auctions";
+export * as bargaining from "./bargaining";

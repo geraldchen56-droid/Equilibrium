@@ -69,6 +69,8 @@ export interface ChartOpts {
   vline?: number; hline?: number;
   aria: string;
   width?: number; height?: number;
+  /** Put series names in a legend row instead of at line ends (use when lines end together). */
+  legend?: boolean;
 }
 
 export function lineChart(o: ChartOpts): SVGElement {
@@ -92,11 +94,20 @@ export function lineChart(o: ChartOpts): SVGElement {
     if (!se.points.length) return;
     const d = se.points.map(([x, y], i) => `${i ? "L" : "M"}${X(x).toFixed(1)},${Y(clampY(y)).toFixed(1)}`).join("");
     svg.append(s("path", { d, fill: "none", stroke: se.colour, "stroke-width": se.width ?? 2.5, "stroke-dasharray": se.dashed ? "6 5" : "none", "stroke-linejoin": "round" }));
-    if (se.name) {
+    if (se.name && !o.legend) {
       const [lx, ly] = se.points[se.points.length - 1];
       svg.append(s("text", { x: X(lx) - 4, y: Y(clampY(ly)) - 8, class: "lineLabel", fill: se.colour, "text-anchor": "end" }, se.name));
     }
   });
+  if (o.legend) {
+    let lx = L + 8;
+    o.series.filter((se) => se.name).forEach((se) => {
+      svg.append(s("line", { x1: lx, x2: lx + 18, y1: T + 10, y2: T + 10, stroke: se.colour, "stroke-width": 3, "stroke-dasharray": se.dashed ? "5 4" : "none" }));
+      const t = s("text", { x: lx + 24, y: T + 14, class: "lineLabel", fill: se.colour }, se.name!);
+      svg.append(t);
+      lx += 34 + se.name!.length * 7.2;
+    });
+  }
   (o.dots ?? []).forEach((dt) => {
     svg.append(s("circle", { cx: X(dt.x), cy: Y(clampY(dt.y)), r: 5.5, fill: dt.colour ?? "var(--eq)", stroke: "#000", "stroke-width": 2 }));
     if (dt.label) svg.append(s("text", { x: X(dt.x) + 9, y: Y(clampY(dt.y)) - 8, class: "lineLabel", fill: dt.colour ?? "var(--eq)" }, dt.label));
