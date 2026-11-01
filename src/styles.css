@@ -292,3 +292,5 @@ td.chip-p0, td.chip-p1 { font-weight: 400; }
   * { transition: none !important; }
   .reveal, .ch-head h1, .ch-head img { opacity: 1; transform: none; filter: none; }
 }
+.btn.on, .btn[aria-pressed="true"].btn-quiet { border-color: var(--ink); color: var(--ink); background: var(--panel-2); }
+.display .math { white-space: normal; }

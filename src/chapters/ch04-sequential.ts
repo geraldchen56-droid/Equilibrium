@@ -28,7 +28,7 @@ export function renderCh04(root: HTMLElement) {
     h("p", null,
       "A ", h("em", null, "game tree"), " draws a sequential game: each circle is a decision, each branch a move, each leaf a final payoff. ",
       h("em", null, "Backward induction"), " solves it. Take a decision whose branches all end in leaves, pick what that player prefers, replace the decision by the payoff it leads to, and repeat until you reach the top."),
-    folder(),
+    treeFolder(),
 
     h("h2", null, "Empty threats"),
     h("p", null,
@@ -130,13 +130,14 @@ function race(): HTMLElement {
 
 // ---------- Interactive: fold a tree back step by step ----------
 
-const TREES: { tree: GameTree; note: string }[] = [
+const CH4_TREES: { tree: GameTree; note: string }[] = [
   { tree: entryTree, note: "If the entrant comes in, the incumbent prefers sharing (2) to a price war (−1). Knowing that, the entrant compares 0 for staying out with 1 for entering, and enters." },
   { tree: leaderTree, note: "Played simultaneously, this game has two equilibria, one favouring each firm. Moving first lets the leader pick: build big, and the follower's best reply is to stay small. That's a first-mover advantage." },
   { tree: centipedeTree, note: "Every player takes at the first chance they get, so the game ends at once with (2, 0), even though passing to the end would give both of them more." },
 ];
 
-function folder(): HTMLElement {
+export function treeFolder(trees: { tree: GameTree; note: string }[] = CH4_TREES): HTMLElement {
+  const TREES = trees;
   const box = h("div", { class: "interactive" });
   let idx = 0;
   let k = 0;
@@ -155,7 +156,7 @@ function folder(): HTMLElement {
       })()
       : "Each circle is a decision; its letter says whose. Start with a decision whose branches all end in payoffs.";
     box.append(
-      h("div", { class: "tabs", role: "group", "aria-label": "Choose a tree" },
+      TREES.length < 2 ? "" : h("div", { class: "tabs", role: "group", "aria-label": "Choose a tree" },
         TREES.map((t, i) => h("button", { type: "button", "aria-pressed": String(i === idx), onclick: () => { idx = i; k = 0; render(); } }, t.tree.title))),
       gameTree(tree, { solution: sol, folded: k }),
       h("p", { class: `feedback ${done ? "done" : st ? "good" : ""}` }, say, done ? h("span", null, " ", h("br"), h("strong", null, `Equilibrium path: `), pathText(tree, sol.path), `. ${note}`) : ""),

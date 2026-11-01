@@ -21,6 +21,9 @@ export function gameTree(t: GameTree, o: TreeOptions = {}): HTMLElement {
   const foldedChoice = new Map(shown.map((st) => [st.node.id, st]));
   const current = shown[shown.length - 1]?.node.id;
   const onPath = new Set(sol && shown.length === sol.steps.length ? sol.path : []);
+  // Node badges: initials, or the last character ("1", "2") when initials collide.
+  const initials = t.players.map((p) => p[0]);
+  const tag = (i: number) => (new Set(initials).size === initials.length ? initials[i] : t.players[i].slice(-1));
 
   // Layout: leaves spaced evenly in order; parents centred over children.
   const pos = new Map<string, { x: number; y: number }>();
@@ -71,7 +74,7 @@ export function gameTree(t: GameTree, o: TreeOptions = {}): HTMLElement {
     });
     const x = X(n.id), y = Y(n.id);
     nodes.append(s("circle", { cx: x, cy: y, r: 15, class: `node node-${PLAYER_CLASS[n.player]}${n.id === current && !onPath.size ? " current" : ""}` }));
-    nodes.append(s("text", { x, y: y + 5, "text-anchor": "middle", class: "node-label" }, t.players[n.player][0]));
+    nodes.append(s("text", { x, y: y + 5, "text-anchor": "middle", class: "node-label" }, tag(n.player)));
     if (fold) {
       const v = s("text", { x: x + 22, y: y - 14, class: "carried" });
       v.append(s("tspan", {}, "("));
@@ -84,6 +87,6 @@ export function gameTree(t: GameTree, o: TreeOptions = {}): HTMLElement {
 
   return h("figure", { class: "tree-wrap" },
     h("div", { class: "tree-scroll" }, svg),
-    h("p", { class: "key" }, t.players.map((p, i) => [i ? ", " : "", h("span", { class: `chip chip-p${i}` }, `${p[0]} = ${p}`)]), ". Payoffs are listed (", t.players.join(", "), ")."),
+    h("p", { class: "key" }, t.players.map((p, i) => [i ? ", " : "", h("span", { class: `chip chip-p${i}` }, `${tag(i)} = ${p}`)]), ". Payoffs are listed (", t.players.join(", "), ")."),
     o.caption ? h("figcaption", null, o.caption) : null);
 }

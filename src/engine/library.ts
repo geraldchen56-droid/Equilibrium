@@ -170,3 +170,38 @@ export const leaderTree: GameTree = {
     Small: node(1, { Big: leaf(1, 3), Small: leaf(2, 2) }, "fs"),
   }, "lead"),
 };
+
+/**
+ * Capacity as commitment (Ch 5). The incumbent can first build spare capacity (costs 1).
+ * Built capacity makes a price war cheap, so the threat to fight becomes credible.
+ * Players: [Incumbent, Entrant].
+ */
+export const capacityTree: GameTree = {
+  id: "capacity",
+  title: "Build capacity first?",
+  players: ["Incumbent", "Entrant"],
+  root: node(0, {
+    Build: node(1, {
+      Out: leaf(3, 0),
+      In: node(0, { Fight: leaf(2, -2), Share: leaf(1, 1) }, "cap-b-i"),
+    }, "cap-b"),
+    Wait: node(1, {
+      Out: leaf(4, 0),
+      In: node(0, { Fight: leaf(-1, -2), Share: leaf(2, 1) }, "cap-w-i"),
+    }, "cap-w"),
+  }, "cap"),
+};
+
+/** Chicken where Driver 1 can first rip out the steering wheel (Ch 5). Players: [Driver 1, Driver 2]. */
+export const wheelTree: GameTree = {
+  id: "wheel",
+  title: "Throw away the wheel",
+  players: ["Driver 1", "Driver 2"],
+  root: node(0, {
+    "Rip out wheel": node(1, { Swerve: leaf(2, -1), Straight: leaf(-10, -10) }, "wh-r"),
+    Keep: node(1, {
+      Swerve: node(0, { Swerve: leaf(0, 0), Straight: leaf(2, -1) }, "wh-k-s"),
+      Straight: node(0, { Swerve: leaf(-1, 2), Straight: leaf(-10, -10) }, "wh-k-t"),
+    }, "wh-k"),
+  }, "wh"),
+};
