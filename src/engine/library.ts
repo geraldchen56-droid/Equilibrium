@@ -1,3 +1,4 @@
+import { GameTree, leaf, node } from "./tree";
 import { makeGame } from "./game";
 
 // Canonical games used across chapters. Payoffs are (Row, Column).
@@ -111,3 +112,61 @@ export const chicken = makeGame({
     [[2, -1], [-10, -10]],
   ],
 });
+
+/**
+ * Penalty kick. Kicker (Row) aims at their natural side or the other side; keeper (Column)
+ * dives one way. Payoffs are scoring chances in %, keeper gets 100 minus that. Rough figures
+ * in line with studies of professional penalties: overall scoring near 80%.
+ */
+export const penaltyKick = makeGame({
+  id: "penalty",
+  title: "Penalty kick",
+  players: ["Kicker", "Keeper"],
+  rows: ["Natural", "Other"],
+  cols: ["Natural", "Other"],
+  payoffs: [
+    [[70, 30], [95, 5]],
+    [[92, 8], [55, 45]],
+  ],
+});
+
+// ---------- Game trees (Chapter 4) ----------
+
+/** Entry deterrence: the incumbent threatens a price war, but would it really fight? */
+export const entryTree: GameTree = {
+  id: "entry",
+  title: "Market entry",
+  players: ["Entrant", "Incumbent"],
+  root: node(0, {
+    Out: leaf(0, 4),
+    In: node(1, { Fight: leaf(-2, -1), Share: leaf(1, 2) }, "inc"),
+  }, "ent"),
+};
+
+/** Four-move centipede: the pot grows each time someone passes. */
+export const centipedeTree: GameTree = {
+  id: "centipede",
+  title: "Centipede",
+  players: ["Ava", "Ben"],
+  root: node(0, {
+    Take: leaf(2, 0),
+    Pass: node(1, {
+      Take: leaf(1, 3),
+      Pass: node(0, {
+        Take: leaf(4, 2),
+        Pass: node(1, { Take: leaf(3, 5), Pass: leaf(6, 4) }, "c4"),
+      }, "c3"),
+    }, "c2"),
+  }, "c1"),
+};
+
+/** Capacity race: the same game as a simultaneous one has two equilibria; moving first picks yours. */
+export const leaderTree: GameTree = {
+  id: "leader",
+  title: "Capacity race",
+  players: ["Leader", "Follower"],
+  root: node(0, {
+    Big: node(1, { Big: leaf(0, 0), Small: leaf(3, 1) }, "fb"),
+    Small: node(1, { Big: leaf(1, 3), Small: leaf(2, 2) }, "fs"),
+  }, "lead"),
+};

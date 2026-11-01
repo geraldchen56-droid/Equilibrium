@@ -209,3 +209,64 @@ button.strat:hover { border-color: currentColor; }
   .matrix td.cell { min-width: 76px; }
   .matrix th.corner { min-width: 96px; }
 }
+
+/* ---------- Chapter 3: mixing ---------- */
+.scoreboard { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; font: 15px/1.4 var(--ui); margin-bottom: 8px; }
+.scoreboard strong { font-size: 19px; font-variant-numeric: tabular-nums; }
+.scoreboard strong.big { font-size: 30px; }
+.muted { color: var(--muted); }
+.pips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 10px; min-height: 24px; }
+.pip { width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center; font: 700 11px var(--ui); color: #fff; }
+.pip.goal { background: var(--eq); }
+.pip.miss { background: var(--bad); }
+.plot { width: 100%; max-width: 560px; height: auto; display: block; margin: 8px 0; font-family: var(--ui); }
+.plot .grid { stroke: var(--grid); stroke-width: 1; }
+.plot .tick { fill: var(--muted); font-size: 11px; }
+.plot .axis { fill: var(--muted); font-size: 12px; }
+.plot .lineLabel { font-size: 13px; font-weight: 700; }
+.plot .cursor { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.plot .eqdot { fill: var(--eq); stroke: var(--panel); stroke-width: 2; }
+.range { display: grid; gap: 4px; font: 600 15px var(--ui); margin: 6px 0 10px; max-width: 560px; }
+.range input[type="range"] { width: 100%; accent-color: var(--row); }
+.btn-small { padding: 4px 10px; font-size: 13px; margin-left: 6px; }
+.worked { padding-left: 22px; font: 16px/1.55 var(--ui); }
+.worked li { margin-bottom: 10px; }
+.worked p { margin: 2px 0 0; }
+.stats { border-collapse: collapse; font: 15px var(--ui); margin: 6px 0; font-variant-numeric: tabular-nums; }
+.stats th, .stats td { padding: 6px 12px; border-bottom: 1px solid var(--grid); text-align: left; }
+.stats th { color: var(--muted); font-weight: 600; }
+
+/* ---------- Chapter 4: trees ---------- */
+.tree-wrap { margin: 16px 0; }
+.tree-scroll { overflow-x: auto; }
+.tree { width: 100%; height: auto; display: block; margin: 0 auto; font-family: var(--ui); }
+.tree .edge { stroke: var(--rule); stroke-width: 2.5; transition: stroke .2s, opacity .2s; }
+.tree .edge.chosen { stroke: var(--eq); stroke-width: 4; }
+.tree .edge.cut { opacity: .3; }
+.tree .edge.on { stroke: var(--eq); stroke-width: 5; }
+.tree .action { fill: var(--ink); font-size: 14px; font-weight: 600; }
+.tree .action.cut { opacity: .35; }
+.tree .node { stroke: var(--panel); stroke-width: 3; }
+.tree .node-p0 { fill: var(--row); }
+.tree .node-p1 { fill: var(--col); }
+.tree .node.current { stroke: var(--eq); stroke-width: 4; }
+.tree .node-label { fill: #fff; font-size: 14px; font-weight: 800; pointer-events: none; }
+.tree .leaf { font-size: 16px; font-weight: 700; fill: var(--muted); }
+.tree .leaf.on { fill: var(--eq); }
+.tree .carried { font-size: 13px; font-weight: 700; fill: var(--muted); }
+.tree .v-p0 { fill: var(--row); }
+.tree .v-p1 { fill: var(--col-ink); }
+.race-log { display: flex; flex-wrap: wrap; gap: 6px; font: 14px var(--ui); }
+.said { padding: 3px 8px; border-radius: 999px; background: var(--grid); }
+.said.you { background: var(--row-soft); color: var(--row); }
+.said.cpu { background: var(--col-soft); color: var(--col-ink); }
+.table-scroll { overflow-x: auto; }
+.pirates td, .pirates th { text-align: center; padding: 6px 8px; }
+.pirates td:first-child { text-align: left; white-space: nowrap; }
+td.chip-p0, td.chip-p1 { font-weight: 700; }
+@media (max-width: 420px) {
+  .topbar { gap: 8px; padding: 0 10px; }
+  .brand { font-size: 17px; }
+  .depth-switch button { padding: 6px 7px; font-size: 12.5px; }
+  .toc-toggle { padding: 6px 8px; }
+}
